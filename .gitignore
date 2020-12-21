@@ -1,0 +1,6 @@
+.history
+conf/config.yml
+data/*
+!data/.gitkeep
+env
+vendor/

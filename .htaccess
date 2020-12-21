@@ -1,0 +1,6 @@
+RewriteRule ^vendor/.* - [L,R=404]
+
+RewriteCond %{REQUEST_FILENAME} !-l
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule .* index.php [L,QSA]

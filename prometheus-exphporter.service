@@ -1,0 +1,10 @@
+[Unit]
+Description=Prometheus Exphporter
+After=local-fs.target
+
+[Service]
+PermissionsStartOnly=true
+ExecStart=make -C {{exphporter_dir}} start
+
+[Install]
+WantedBy=multi-user.target
