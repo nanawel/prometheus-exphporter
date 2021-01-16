@@ -38,7 +38,7 @@ class FindCount extends AbstractCollector
     }
 
     protected function getGaugeLabels($name, $path) {
-        return $this->getCommonLabels() + ['find_count_name' => $name, 'find_count_path' => $path];
+        return $this->getCommonLabels() + ['name' => $name, 'path' => $path];
     }
 
     protected function optsToShellArgs(array $opts) {
