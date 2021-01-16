@@ -3,7 +3,7 @@ collectors:
   enabled:
     #- Arrakis\Exphporter\Collector\DiskUsage
     #- Arrakis\Exphporter\Collector\FindCount
-    #- Arrakis\Exphporter\Collector\FindCountByDate
+    #  
     #- Arrakis\Exphporter\Collector\Livebox
     - Arrakis\Exphporter\Collector\OsRelease
     #- Arrakis\Exphporter\Collector\Packages
@@ -40,6 +40,7 @@ collectors:
           # Example below means "every 10 minutes"
           group_by: PT10M
           use_stat: mtime
+          current_only: false
 
     Arrakis\Exphporter\Collector\Livebox:
       sysbus_path: /opt/rene-d-sysbus/src/sysbus/sysbus.py

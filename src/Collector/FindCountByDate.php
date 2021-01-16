@@ -74,15 +74,18 @@ class FindCountByDate extends AbstractCollector
             $intervalStart = $this->getIntervalStart($fileTime, $pathConfig['group_by']);
 
             if (!isset($chunksByDate[$intervalStart])) {
-                $chunksByDate[$intervalStart] = [
-                    'intervalStart' => $intervalStart,
-                    'intervalEnd' => (new \DateTime("@$intervalStart"))
-                        ->add((new \DateInterval($pathConfig['group_by'])))
-                        ->getTimestamp(),
-                    'count' => 0,
-                ];
+                $chunksByDate[$intervalStart] = $this->initChunk($intervalStart, $pathConfig);
             }
             $chunksByDate[$intervalStart]['count']++;
+        }
+
+        if ($pathConfig['current_only'] ?? false) {
+            $currentIntervalStart = $this->getIntervalStart(time(), $pathConfig['group_by']);
+            
+            return [
+                $currentIntervalStart => $chunksByDate[$currentIntervalStart]
+                    ?? $this->initChunk($currentIntervalStart, $pathConfig)
+            ];
         }
 
         return $chunksByDate;
@@ -105,5 +108,15 @@ class FindCountByDate extends AbstractCollector
         }
 
         return $intervalSeconds[$intervalDefinition];
+    }
+
+    protected function initChunk($intervalStart, $pathConfig) {
+        return [
+            'intervalStart' => $intervalStart,
+            'intervalEnd' => (new \DateTime("@$intervalStart"))
+                ->add((new \DateInterval($pathConfig['group_by'])))
+                ->getTimestamp(),
+            'count' => 0,
+        ];
     }
 }
