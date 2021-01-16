@@ -3,6 +3,7 @@ collectors:
   enabled:
     #- Arrakis\Exphporter\Collector\DiskUsage
     #- Arrakis\Exphporter\Collector\FindCount
+    #- Arrakis\Exphporter\Collector\FindCountByDate
     #- Arrakis\Exphporter\Collector\Livebox
     - Arrakis\Exphporter\Collector\OsRelease
     #- Arrakis\Exphporter\Collector\Packages
@@ -28,6 +29,17 @@ collectors:
           path: /tmp
           opts:
             '-iname': '*CHROMIUM*'
+
+    Arrakis\Exphporter\Collector\FindCountByDate:
+      paths:
+        - name: '*-*-*-*-*.jpg in /var/motion'
+          path: /var/motion
+          opts:
+            '-name': '*-*-*-*-*.jpg'
+          # Available values for group_by: see https://www.php.net/manual/dateinterval.construct.php
+          # Example below means "every 10 minutes"
+          group_by: PT10M
+          use_stat: mtime
 
     Arrakis\Exphporter\Collector\Livebox:
       sysbus_path: /opt/rene-d-sysbus/src/sysbus/sysbus.py
