@@ -8,8 +8,8 @@
         }
     ],
     "require": {
-        "tweedegolf/prometheus-client": "^0.3.0",
-        "symfony/yaml": "^5.0"
+        "tweedegolf/prometheus-client": "^0.3",
+        "symfony/yaml": "^5"
     },
     "autoload": {
         "psr-4": {
