@@ -38,12 +38,12 @@ class CommandLineCount extends AbstractCollector
                 $output,
                 $rc
             );
-            if ($rc) {
-                $registry->getGauge('command_line_count_return_code')
-                    ->set($rc, $this->getGaugeLabels($commandConfig['name'], $commandConfig['command']));
-                if (empty($commandConfig['ignore_errors'])) {
-                    throw new Exception('The command returned an error code: ' . $rc);
-                }
+            
+            $registry->getGauge('command_line_count_return_code')
+                ->set($rc, $this->getGaugeLabels($commandConfig['name'], $commandConfig['command']));
+            
+            if ($rc && empty($commandConfig['ignore_errors'])) {
+                throw new Exception('The command returned an error code: ' . $rc);
             }
 
             $registry->getGauge('command_line_count')
