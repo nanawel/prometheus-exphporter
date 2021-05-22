@@ -1,15 +1,22 @@
 ---
 collectors:
   enabled:
+    #- Arrakis\Exphporter\Collector\BorgRepository
+    #- Arrakis\Exphporter\Collector\CommandLineCount
     #- Arrakis\Exphporter\Collector\DiskUsage
     #- Arrakis\Exphporter\Collector\FindCount
-    #  
+    #- Arrakis\Exphporter\Collector\FindCountByDate
     #- Arrakis\Exphporter\Collector\Livebox
     - Arrakis\Exphporter\Collector\OsRelease
     #- Arrakis\Exphporter\Collector\Packages
     #- Arrakis\Exphporter\Collector\V4l2ctl
   
   configuration:
+    Arrakis\Exphporter\Collector\CommandLineCount:
+      commands:
+        - name: 'Processes count'
+          command: 'ps aux'
+
     Arrakis\Exphporter\Collector\DiskUsage:
       paths:
         - path: /var/log
