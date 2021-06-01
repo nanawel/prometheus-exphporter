@@ -246,7 +246,7 @@ class BorgRepository extends AbstractCollector
         $output = implode("\n", $output);
 
         if ($rc) {
-            $this->log("$fullCmd\n$output", 'ERROR');
+            $this->log(sprintf("$fullCmd\n%s", json_encode($output, JSON_PRETTY_PRINT)), 'ERROR');
             throw new Exception("Command '$fullCmd' returned an error code: $rc ($output)", $rc);
         }
 

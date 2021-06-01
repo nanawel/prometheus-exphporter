@@ -84,7 +84,7 @@ class V4l2ctl extends AbstractCollector
         $command = sprintf('v4l2-ctl -d %s --all', escapeshellarg($devicePath));
         exec($command, $output, $rc);
         if ($rc) {
-            $this->log("$command\n$output", 'ERROR');
+            $this->log(sprintf("$command\n%s", json_encode($output, JSON_PRETTY_PRINT)), 'ERROR');
 
             return [];
         }
