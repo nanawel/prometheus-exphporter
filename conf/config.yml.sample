@@ -62,7 +62,7 @@ collectors:
       metrics:
         - throttled: true
         - temp: true
-        - clock: [arm, core, H264, isp, v3d, uart, pwm, emmc, pixel, vec, hdmi, dpi]
+        - clock: [arm, core, h264, isp, v3d, uart, pwm, emmc, pixel, vec, hdmi, dpi]
         - volts: [core, sdram_c, sdram_i, sdram_p]
     
     Arrakis\Exphporter\Collector\V4l2ctl:
