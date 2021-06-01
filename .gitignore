@@ -3,4 +3,5 @@ conf/config.yml
 data/*
 !data/.gitkeep
 env
+tmp/
 vendor/
