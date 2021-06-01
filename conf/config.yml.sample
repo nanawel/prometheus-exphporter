@@ -60,10 +60,10 @@ collectors:
       vcgencmd_path: /opt/vc/bin/vcgencmd
       # See https://www.raspberrypi.org/documentation/raspbian/applications/vcgencmd.md
       metrics:
-        - throttled: true
-        - temp: true
-        - clock: [arm, core, h264, isp, v3d, uart, pwm, emmc, pixel, vec, hdmi, dpi]
-        - volts: [core, sdram_c, sdram_i, sdram_p]
+        throttled: true
+        temp: true
+        clock: [arm, core, h264, isp, v3d, uart, pwm, emmc, pixel, vec, hdmi, dpi]
+        volts: [core, sdram_c, sdram_i, sdram_p]
     
     Arrakis\Exphporter\Collector\V4l2ctl:
       devices:
