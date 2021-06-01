@@ -65,7 +65,7 @@ class RaspberryPiHealth extends AbstractCollector
                     '%s %s %s',
                     $this->getVcgencmdPath(),
                     self::METRICS_CMD[$type],
-                    $arg
+                    is_string($arg) ? $arg : ''
                 );
                 exec($command, $output, $rc);
                 if ($rc || empty($output[0])) {
