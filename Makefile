@@ -16,7 +16,7 @@ checkreq:
 .PHONY: install
 install: checkreq
 	which composer && composer install \
-		|| { wget https://getcomposer.org/composer-stable.phar -O composer.phar && chmod +x composer.phar && ./composer.phar install; }
+		|| { wget https://getcomposer.org/composer-stable.phar -O composer.phar && chmod +x composer.phar && ./composer.phar -n install; }
 	[ -f ./conf/config.yml ] || cp ./conf/config.yml.sample ./conf/config.yml
 
 .PHONY: install-service
