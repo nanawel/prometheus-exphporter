@@ -8,6 +8,16 @@ use TweedeGolf\PrometheusClient\PrometheusException;
 class RaspberryPiHealth extends AbstractCollector
 {
     const DEFAULT_VCGENCMD_PATH = '/opt/vc/bin/vcgencmd';
+    const DEFAULT_METRICS = [
+        'throttled' => true,
+        'temp' =>  true,
+        'clock' => [
+            'arm', 'core', 'h264', 'isp', 'v3d', 'uart', 'pwm', 'emmc', 'pixel', 'vec', 'hdmi', 'dpi'
+        ],
+        'volts' => [
+            'core', 'sdram_c', 'sdram_i', 'sdram_p'
+        ]
+    ];
 
     const METRICS_CMD = [
         'throttled' => 'get_throttled',
@@ -24,9 +34,13 @@ class RaspberryPiHealth extends AbstractCollector
         return $this->config['vcgencmd_path'] ?? self::DEFAULT_VCGENCMD_PATH;
     }
 
+    public function getMetrics() {
+        return $this->config['metrics'] ?? self::DEFAULT_METRICS;
+    }
+
     public function collect(CollectorRegistry $registry)
     {
-        foreach ($this->config['metrics'] as $metric => $args) {
+        foreach ($this->getMetrics() as $metric => $args) {
             $this->retrieveMetrics($registry, $metric, $args);
         }
     }
