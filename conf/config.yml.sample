@@ -1,5 +1,6 @@
 ---
 collectors:
+  # Uncomment and configure collectors as needed
   enabled:
     #- Arrakis\Exphporter\Collector\BorgRepository
     #- Arrakis\Exphporter\Collector\CommandLineCount
@@ -13,6 +14,16 @@ collectors:
     #- Arrakis\Exphporter\Collector\V4l2ctl
   
   configuration:
+    # See https://borgbackup.readthedocs.io/
+    Arrakis\Exphporter\Collector\BorgRepository:
+      repositories:
+        - name: my-documents
+          path: /var/lib/borg-backup/repositories/documents
+          passphrase_file: /root/.borg-backup-passphrase
+        - name: my-music
+          path: /var/lib/borg-backup/repositories/music
+          passphrase_file: /root/.borg-backup-passphrase
+
     Arrakis\Exphporter\Collector\CommandLineCount:
       commands:
         - name: 'Processes count'
@@ -51,6 +62,7 @@ collectors:
           current_only: false
 
     Arrakis\Exphporter\Collector\Livebox:
+      # You need to install sysbus first. See https://github.com/rene-d/sysbus
       sysbus_path: /opt/rene-d-sysbus/src/sysbus/sysbus.py
       sysbus_settings:
         password_livebox: MySecretPassword
