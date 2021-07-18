@@ -5,7 +5,7 @@ namespace Arrakis\Exphporter\Collector;
 use TweedeGolf\PrometheusClient\CollectorRegistry;
 class DiskUsage extends AbstractCollector
 {
-    const DEFAULT_UPDATE_DELAY = 60 * 60;  // 1 hour
+    const DEFAULT_UPDATE_DELAY = 10 * 60;  // 10 minutes
 
     public function collect(CollectorRegistry $registry)
     {
