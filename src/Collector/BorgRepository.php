@@ -174,6 +174,7 @@ class BorgRepository extends AbstractCollector
     }
 
     /**
+     * @param string $scrapeName
      * @return bool
      */
     protected function shouldScrape($scrapeName) {
