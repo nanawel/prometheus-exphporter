@@ -47,7 +47,13 @@ class DiskUsage extends AbstractCollector
      * @return bool
      */
     protected function shouldScrape($path) {
-        $delay = $this->config['scrape_freq']
+        foreach ($this->config['paths'] as $pathConfig) {
+            if ($pathConfig['path'] === $path && isset($pathConfig['scrape_freq'])) {
+                $delay = $pathConfig['scrape_freq'];
+            }
+        }
+        $delay = $delay
+            ?? $this->config['scrape_freq']
             ?? self::DEFAULT_UPDATE_DELAY;
         if (!$delay) {
             return false;

@@ -30,6 +30,7 @@ collectors:
           command: 'ps aux'
 
     Arrakis\Exphporter\Collector\DiskUsage:
+      scrape_freq: 3600
       paths:
         - path: /var/log
           one_fs: true
@@ -37,6 +38,7 @@ collectors:
         - path: /tmp
           one_fs: true
           ignore_errors: true
+          scrape_freq: 1800
     
     Arrakis\Exphporter\Collector\FindCount:
       paths:
