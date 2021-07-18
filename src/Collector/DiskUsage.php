@@ -3,9 +3,10 @@
 namespace Arrakis\Exphporter\Collector;
 
 use TweedeGolf\PrometheusClient\CollectorRegistry;
-
 class DiskUsage extends AbstractCollector
 {
+    const DEFAULT_UPDATE_DELAY = 60 * 60;  // 1 hour
+
     public function collect(CollectorRegistry $registry)
     {
         $registry->createGauge(
@@ -17,18 +18,61 @@ class DiskUsage extends AbstractCollector
             true
         );
         foreach ($this->config['paths'] ?? [] as $pathConfig) {
-            $opts = !empty($pathConfig['one_fs']) ? 'x' : '';
-            exec("du -sb{$opts} {$pathConfig['path']}", $output, $rc);
-            if ($rc && empty($pathConfig['ignore_errors'])) {
-                throw new Exception('du returned an error code: ' . $rc);
+            if ($this->shouldScrape($pathConfig['path'])) {
+                $opts = !empty($pathConfig['one_fs']) ? 'x' : '';
+                exec("du -sb{$opts} {$pathConfig['path']}", $output, $rc);
+                if ($rc && empty($pathConfig['ignore_errors'])) {
+                    throw new Exception('du returned an error code: ' . $rc);
+                }
+
+                $this->saveScrapeState($pathConfig['path'], $scrapeData = [
+                    'last_scrape' => time(),
+                    'usage_bytes' => preg_replace('/^(\d+).*/', '$1', array_pop($output)),
+                ]);
+            } else {
+                $scrapeData = $this->loadScrapeState($pathConfig['path']);
             }
 
             $registry->getGauge('disk_usage')
-                ->set(preg_replace('/^(\d+).*/', '$1', array_pop($output)), $this->getGaugeLabels($pathConfig['path']));
+                ->set($scrapeData['usage_bytes'], $this->getGaugeLabels($pathConfig['path']));
         }
     }
 
     protected function getGaugeLabels($path) {
         return $this->getCommonLabels() + ['disk_usage_path' => $path];
+    }
+
+    /**
+     * @string $path
+     * @return bool
+     */
+    protected function shouldScrape($path) {
+        $delay = $this->config['scrape_freq']
+            ?? self::DEFAULT_UPDATE_DELAY;
+        if (!$delay) {
+            return false;
+        }
+
+        $lastScrape = $this->loadScrapeState($path)['last_scrape'] ?? 0;
+
+        return  time() - $lastScrape > $delay;
+    }
+
+    /**
+     * @param string $path
+     * @return mixed
+     */
+    protected function loadScrapeState($path) {
+        return $this->loadState()[$path] ?? [];
+    }
+    
+    /**
+     * @param string $path
+     * @param mixed $data
+     */
+    protected function saveScrapeState($path, $data) {
+        $state = $this->loadState() ?? [];
+        $state[$path] = $data;
+        $this->saveState($state);
     }
 }
