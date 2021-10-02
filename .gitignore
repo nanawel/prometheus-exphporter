@@ -1,7 +1,9 @@
 .history
+.idea
 conf/config.yml
 data/*
 !data/.gitkeep
 env
+nohup.out
 tmp/
 vendor/
