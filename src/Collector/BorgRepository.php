@@ -17,7 +17,7 @@ class BorgRepository extends AbstractCollector
         $this->collectRepositoryInfo($registry);
         $this->collectRepositoryContent($registry);
     }
-        
+
     protected function collectRepositoryInfo(CollectorRegistry $registry) {
         $labels = $this->getCommonLabels() + [
             'repository_name' => null,
@@ -50,7 +50,7 @@ class BorgRepository extends AbstractCollector
             CollectorRegistry::DEFAULT_STORAGE,
             true
         );
-        
+
         foreach ($this->config['repositories'] as $repositoryConfig) {
             $labels['repository_name'] = $repositoryConfig['name'];
             $scrapeName = $repositoryConfig['name'] . '_repository_info';
@@ -73,7 +73,7 @@ class BorgRepository extends AbstractCollector
                     $scrapeData = $this->loadScrapeState($scrapeName);
                     $scrapeData['return_code'] = $e->getCode();
                     $this->saveScrapeState($scrapeName, $scrapeData);
-                } 
+                }
             } else {
                 $scrapeData = $this->loadScrapeState($scrapeName);
             }
@@ -94,7 +94,7 @@ class BorgRepository extends AbstractCollector
         $labels = $this->getCommonLabels() + [
             'repository_name' => null,
         ];
-        
+
         $registry->createGauge(
             'borg_repository_archive_count',
             array_keys($labels),
@@ -121,7 +121,7 @@ class BorgRepository extends AbstractCollector
             CollectorRegistry::DEFAULT_STORAGE,
             true
         );
-        
+
         foreach ($this->config['repositories'] as $repositoryConfig) {
             $labels['repository_name'] = $repositoryConfig['name'];
             $scrapeName = $repositoryConfig['name'] . '_repository_content';
@@ -148,13 +148,13 @@ class BorgRepository extends AbstractCollector
             } else {
                 $scrapeData = $this->loadScrapeState($scrapeName);
             }
-            
+
             $registry->getGauge('borg_repository_content_return_code')
                 ->set($scrapeData['return_code'], $labels);
 
             $registry->getGauge('borg_repository_archive_count')
                 ->set(count($scrapeData['metrics']['archives']), $labels);
-            
+
             // Last modified (check the latest archive available)
             $lastModified = '';
             foreach ($scrapeData['metrics']['archives'] ?? [] as $archiveInfo) {
@@ -162,7 +162,7 @@ class BorgRepository extends AbstractCollector
                     $lastModified = $archiveInfo['time'];
                 }
             }
-    
+
             // Last modified
             $registry->getGauge('borg_repository_last_modified')
                 ->set(
@@ -196,7 +196,7 @@ class BorgRepository extends AbstractCollector
     protected function loadScrapeState($scrapeName) {
         return $this->loadState()[$scrapeName] ?? [];
     }
-    
+
     /**
      * @param string $scrapeName
      * @param mixed $data
@@ -218,7 +218,7 @@ class BorgRepository extends AbstractCollector
 
     /**
      * @param string|array $cmd
-     * @param $passphraseFile $cmd
+     * @param string $passphraseFile
      * @return string
      */
     protected function execCommand($cmd, $passphraseFile) {
@@ -233,13 +233,13 @@ class BorgRepository extends AbstractCollector
 
         putenv('BORG_RELOCATED_REPO_ACCESS_IS_OK=yes'); // Avoid warning with interactive confirmation
         putenv(sprintf('BORG_PASSPHRASE=%s', trim(file_get_contents($passphraseFile))));
-        
+
         exec(
             $fullCmd,
             $output,
             $rc
         );
-        
+
         // Clear env
         putenv('BORG_RELOCATED_REPO_ACCESS_IS_OK');
         putenv('BORG_PASSPHRASE');
