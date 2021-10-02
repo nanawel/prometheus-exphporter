@@ -139,10 +139,18 @@ class SpeedtestCli extends AbstractCollector
         $options = '-f json-pretty';
 
         $fullCmd = sprintf(
-            '%s %s',
+            '%s %s 2>&1',
             $this->getSpeedtestBinPath(),
             $options
         );
+
+        // HOME is mandatory for speedtest when checking EULA acceptance but is not set
+        // when the script is handled by systemd, so here's a little workaround
+        if (!getenv('HOME')) {
+            exec(sprintf('getent passwd %d', posix_getuid()), $out, $rc);
+            $home = explode(':', $out[0])[5];
+            putenv("HOME=$home");
+        }
 
         exec(
             $fullCmd,

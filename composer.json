@@ -8,6 +8,8 @@
         }
     ],
     "require": {
+        "ext-json": "*",
+        "ext-posix": "*",
         "tweedegolf/prometheus-client": "^0.3",
         "symfony/yaml": "^5"
     },
