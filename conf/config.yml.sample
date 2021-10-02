@@ -11,8 +11,9 @@ collectors:
     - Arrakis\Exphporter\Collector\OsRelease
     #- Arrakis\Exphporter\Collector\Packages
     #- Arrakis\Exphporter\Collector\RaspberryPiHealth
+    #- Arrakis\Exphporter\Collector\SpeedtestCli
     #- Arrakis\Exphporter\Collector\V4l2ctl
-  
+
   configuration:
     # See https://borgbackup.readthedocs.io/
     Arrakis\Exphporter\Collector\BorgRepository:
@@ -39,7 +40,7 @@ collectors:
           one_fs: true
           ignore_errors: true
           scrape_freq: 1800
-    
+
     Arrakis\Exphporter\Collector\FindCount:
       paths:
         - name: '*.jar in /tmp'
@@ -69,7 +70,7 @@ collectors:
       sysbus_settings:
         password_livebox: MySecretPassword
         version_livebox: lb4
-    
+
     Arrakis\Exphporter\Collector\RaspberryPiHealth:
       vcgencmd_path: /opt/vc/bin/vcgencmd
       # See https://www.raspberrypi.org/documentation/raspbian/applications/vcgencmd.md
@@ -78,7 +79,12 @@ collectors:
         temp: true
         clock: [arm, core, h264, isp, v3d, uart, pwm, emmc, pixel, vec, hdmi, dpi]
         volts: [core, sdram_c, sdram_i, sdram_p]
-    
+
+    Arrakis\Exphporter\Collector\SpeedtestCli:
+      # NOTICE: You have to run speedtest manually once to accept the EULA and privacy notice!
+      speedtest_path: # Leave empty for auto-detection in PATH
+      scrape_freq: 3600
+
     Arrakis\Exphporter\Collector\V4l2ctl:
       devices:
         - path: /dev/video0
