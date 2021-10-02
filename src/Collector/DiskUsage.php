@@ -61,24 +61,6 @@ class DiskUsage extends AbstractCollector
 
         $lastScrape = $this->loadScrapeState($path)['last_scrape'] ?? 0;
 
-        return  time() - $lastScrape > $delay;
-    }
-
-    /**
-     * @param string $path
-     * @return mixed
-     */
-    protected function loadScrapeState($path) {
-        return $this->loadState()[$path] ?? [];
-    }
-    
-    /**
-     * @param string $path
-     * @param mixed $data
-     */
-    protected function saveScrapeState($path, $data) {
-        $state = $this->loadState() ?? [];
-        $state[$path] = $data;
-        $this->saveState($state);
+        return time() - $lastScrape > $delay;
     }
 }

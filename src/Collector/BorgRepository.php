@@ -186,25 +186,7 @@ class BorgRepository extends AbstractCollector
 
         $lastScrape = $this->loadScrapeState($scrapeName)['last_scrape'] ?? 0;
 
-        return  time() - $lastScrape > $delay;
-    }
-
-    /**
-     * @param string $scrapeName
-     * @return mixed
-     */
-    protected function loadScrapeState($scrapeName) {
-        return $this->loadState()[$scrapeName] ?? [];
-    }
-
-    /**
-     * @param string $scrapeName
-     * @param mixed $data
-     */
-    protected function saveScrapeState($scrapeName, $data) {
-        $state = $this->loadState() ?? [];
-        $state[$scrapeName] = $data;
-        $this->saveState($state);
+        return time() - $lastScrape > $delay;
     }
 
     /**

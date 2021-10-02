@@ -34,7 +34,7 @@ abstract class AbstractCollector implements CollectorInterface
 
         return $this;
     }
-    
+
     /**
      * @return mixed
      */
@@ -44,6 +44,24 @@ abstract class AbstractCollector implements CollectorInterface
         }
 
         return null;
+    }
+
+    /**
+     * @param string $scrapeName
+     * @return mixed
+     */
+    protected function loadScrapeState($scrapeName) {
+        return $this->loadState()[$scrapeName] ?? [];
+    }
+
+    /**
+     * @param string $scrapeName
+     * @param mixed $data
+     */
+    protected function saveScrapeState($scrapeName, $data) {
+        $state = $this->loadState() ?? [];
+        $state[$scrapeName] = $data;
+        $this->saveState($state);
     }
 
     /**
