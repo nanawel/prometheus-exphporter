@@ -85,7 +85,6 @@ class SpeedtestCli extends AbstractCollector
             } catch (Exception $e) {
                 $this->log($e->getMessage(), 'ERROR');
 
-                // Hopefully this error is temporary (e.g. lock) so use latest scraped data instead
                 $scrapeData = $this->loadScrapeState(self::DEFAULT_SCRAPE_NAME);
                 $scrapeData['return_code'] = $e->getCode();
                 $this->saveScrapeState(self::DEFAULT_SCRAPE_NAME, $scrapeData);
@@ -97,21 +96,23 @@ class SpeedtestCli extends AbstractCollector
         $registry->getGauge('speedtest_return_code')
             ->set($scrapeData['return_code'], $this->getCommonLabels());
 
-        // Prepare labels once with results
-        array_walk($gaugeLabels, function(&$v, $k) use ($scrapeData) {
-            list($firstLevelKey, $secondLevelKey) = explode('_', $k);
-            if (isset($scrapeData['result'][$firstLevelKey][$secondLevelKey])) {
-                $v = $scrapeData['result'][$firstLevelKey][$secondLevelKey];
-            }
-        });
+        if ($scrapeData['return_code'] === 0) {
+            // Prepare labels once with results
+            array_walk($gaugeLabels, function(&$v, $k) use ($scrapeData) {
+                list($firstLevelKey, $secondLevelKey) = explode('_', $k);
+                if (isset($scrapeData['result'][$firstLevelKey][$secondLevelKey])) {
+                    $v = $scrapeData['result'][$firstLevelKey][$secondLevelKey];
+                }
+            });
 
-        foreach ($gaugeResultDataPaths as $firstLevelKey => $secondLevelKeys) {
-            foreach ($secondLevelKeys as $secondLevelKey) {
-                $registry->getGauge(sprintf('speedtest_%s_%s', $firstLevelKey, $secondLevelKey))
-                    ->set(
-                        $scrapeData['result'][$firstLevelKey][$secondLevelKey],
-                        $gaugeLabels
-                    );
+            foreach ($gaugeResultDataPaths as $firstLevelKey => $secondLevelKeys) {
+                foreach ($secondLevelKeys as $secondLevelKey) {
+                    $registry->getGauge(sprintf('speedtest_%s_%s', $firstLevelKey, $secondLevelKey))
+                        ->set(
+                            $scrapeData['result'][$firstLevelKey][$secondLevelKey],
+                            $gaugeLabels
+                        );
+                }
             }
         }
     }
