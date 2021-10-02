@@ -21,10 +21,10 @@ class Livebox extends AbstractCollector
         $this->collectDeviceInfo($registry);
         $this->collectHosts($registry);
     }
-    
+
     protected function collectWifiStatus(CollectorRegistry $registry) {
         $result = json_decode($this->execCommand('-wifistate'), true);
-        
+
         $registry->createGauge(
             'livebox_wifi_status',
             array_keys($this->getCommonLabels()),
@@ -33,14 +33,14 @@ class Livebox extends AbstractCollector
             CollectorRegistry::DEFAULT_STORAGE,
             true
         );
-        
+
         $registry->getGauge('livebox_wifi_status')
             ->set($result['status']['Status'] ? 1 : 0, $this->getCommonLabels());
     }
-        
+
     protected function collectDeviceInfo(CollectorRegistry $registry) {
         $result = json_decode($this->execCommand('sysbus.DeviceInfo:get'), true);
-        
+
         // Software Version
         $labels = $this->getCommonLabels() + ['version' => $result['status']['SoftwareVersion']];
         $registry->createGauge(
@@ -53,7 +53,7 @@ class Livebox extends AbstractCollector
         );
         $registry->getGauge('livebox_software_version')
             ->set(1, $labels);
-        
+
         // Uptime
         $labels = $this->getCommonLabels();
         $registry->createGauge(
@@ -66,7 +66,7 @@ class Livebox extends AbstractCollector
         );
         $registry->getGauge('livebox_uptime')
             ->set($result['status']['UpTime'], $labels);
-        
+
         // External IP Address
         $labels = $this->getCommonLabels() + ['external_ip_address' => $result['status']['ExternalIPAddress']];
         $registry->createGauge(
@@ -101,10 +101,10 @@ class Livebox extends AbstractCollector
         $result = json_decode($this->execCommand('sysbus.Hosts.Host:get'), JSON_OBJECT_AS_ARRAY);
         foreach ($result['status'] as $hostInfo) {
             $labels = $this->getCommonLabels() + [
-                'mac' => $hostInfo['MACAddress'],
-                'interface' => $hostInfo['InterfaceType'],
-                'name' => $hostInfo['HostName'],
-                'addr' => $hostInfo['IPAddress']
+                'mac' => $hostInfo['MACAddress'] ?? null,
+                'interface' => $hostInfo['InterfaceType'] ?? null,
+                'name' => $hostInfo['HostName'] ?? null,
+                'addr' => $hostInfo['IPAddress'] ?? null
             ];
             $registry->getGauge('livebox_hosts')
                 ->set($hostInfo['Active'] ? 1 : 0, $labels);
