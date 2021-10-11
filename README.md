@@ -1,5 +1,5 @@
 Prometheus Exphporter
-===
+=====================
 
 ## Installation
 
@@ -47,3 +47,7 @@ as `DocumentRoot`.
 > 
 > Note bis: As the script won't be run as `root`, some collectors might not
 > work correctly (or work at all).
+
+## License
+
+See [LICENSE](LICENSE)
