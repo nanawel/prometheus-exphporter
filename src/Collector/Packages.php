@@ -35,14 +35,18 @@ class Packages extends AbstractCollector
             exec('apt update');
         }
         exec('apt list --upgradable', $output);
-        
+
         return $output;
     }
-    
+
     protected function getUpgradablePackages_ubuntu() {
         return $this->getUpgradablePackages_debian();
     }
-    
+
+    protected function getUpgradablePackages_raspbian() {
+        return $this->getUpgradablePackages_debian();
+    }
+
     protected function getUpgradablePackages_arch() {
         if ($this->shouldUpdate()) {
             $this->saveState(['last_update' => time()]);
