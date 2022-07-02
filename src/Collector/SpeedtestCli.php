@@ -12,7 +12,8 @@ class SpeedtestCli extends AbstractCollector
     const DEFAULT_UPDATE_DELAY = 60 * 60;  // 1 hour
     const DEFAULT_SCRAPE_NAME = 'default';
 
-    public function isAvailable() {
+    public function isAvailable()
+    {
         exec(sprintf('which %s', $this->getSpeedtestBinPath()), $output, $rc);
 
         return $rc === 0;
@@ -98,7 +99,7 @@ class SpeedtestCli extends AbstractCollector
 
         if ($scrapeData['return_code'] === 0) {
             // Prepare labels once with results
-            array_walk($gaugeLabels, function(&$v, $k) use ($scrapeData) {
+            array_walk($gaugeLabels, function (&$v, $k) use ($scrapeData) {
                 list($firstLevelKey, $secondLevelKey) = explode('_', $k);
                 if (isset($scrapeData['result'][$firstLevelKey][$secondLevelKey])) {
                     $v = $scrapeData['result'][$firstLevelKey][$secondLevelKey];
@@ -120,7 +121,8 @@ class SpeedtestCli extends AbstractCollector
     /**
      * @return bool
      */
-    protected function shouldScrape() {
+    protected function shouldScrape()
+    {
         $delay = $this->config['scrape_freq']
             ?? self::DEFAULT_UPDATE_DELAY;
         if (!$delay) {
@@ -135,8 +137,12 @@ class SpeedtestCli extends AbstractCollector
     /**
      * @return string
      */
-    protected function execCommand() {
+    protected function execCommand()
+    {
         $options = '-f json-pretty';
+        if ($this->config['force_accept_gdpr'] ?? true) {
+            $options .= ' --accept-gdpr';
+        }
 
         $fullCmd = sprintf(
             '%s %s 2>&1',
@@ -171,7 +177,8 @@ class SpeedtestCli extends AbstractCollector
     /**
      * @return string|null
      */
-    protected function getSpeedtestBinPath() {
+    protected function getSpeedtestBinPath()
+    {
         if (empty($this->config['speedtest_path'])) {
             return 'speedtest';
         }

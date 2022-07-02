@@ -84,6 +84,7 @@ collectors:
       # NOTICE: You have to run speedtest manually once to accept the EULA and privacy notice!
       speedtest_path: # Leave empty for auto-detection in PATH
       scrape_freq: 3600
+      force_accept_gdpr: true
 
     Arrakis\Exphporter\Collector\V4l2ctl:
       devices:
