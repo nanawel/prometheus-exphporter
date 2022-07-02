@@ -12,8 +12,7 @@ class BorgRepository extends AbstractCollector
         return !empty($this->config['repositories']);
     }
 
-    public function collect(CollectorRegistry $registry)
-    {
+    public function collect(CollectorRegistry $registry) {
         $this->collectRepositoryInfo($registry);
         $this->collectRepositoryContent($registry);
     }
