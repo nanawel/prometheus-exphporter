@@ -17,9 +17,21 @@ class Livebox extends AbstractCollector
             $this->config['sysbus_settings']['url_livebox'] = 'http://192.168.1.1/';
         }
 
-        $this->collectWifiStatus($registry);
-        $this->collectDeviceInfo($registry);
-        $this->collectHosts($registry);
+        try {
+            $this->collectWifiStatus($registry);
+        } catch (\Throwable $e) {
+            $this->log('Cannot retrieve WIFI status: ' . $e->getMessage(), 'ERROR');
+        }
+        try {
+            $this->collectDeviceInfo($registry);
+        } catch (\Throwable $e) {
+            $this->log('Cannot retrieve device info: ' . $e->getMessage(), 'ERROR');
+        }
+        try {
+            $this->collectHosts($registry);
+        } catch (\Throwable $e) {
+            $this->log('Cannot retrieve hosts status: ' . $e->getMessage(), 'ERROR');
+        }
     }
 
     protected function collectWifiStatus(CollectorRegistry $registry) {
@@ -40,6 +52,9 @@ class Livebox extends AbstractCollector
 
     protected function collectDeviceInfo(CollectorRegistry $registry) {
         $result = json_decode($this->execCommand('sysbus.DeviceInfo:get'), true);
+        if (!is_array($result) || !is_array($result['status'])) {
+            throw new \Exception("Cannot process command output.");
+        }
 
         // Software Version
         $labels = $this->getCommonLabels() + ['version' => $result['status']['SoftwareVersion']];
@@ -99,6 +114,9 @@ class Livebox extends AbstractCollector
         );
 
         $result = json_decode($this->execCommand('sysbus.Hosts.Host:get'), JSON_OBJECT_AS_ARRAY);
+        if (!is_array($result) || !is_array($result['status'])) {
+            throw new \Exception("Cannot process command output.");
+        }
         foreach ($result['status'] as $hostInfo) {
             $labels = $this->getCommonLabels() + [
                 'mac' => $hostInfo['MACAddress'] ?? null,
