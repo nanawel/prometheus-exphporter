@@ -53,7 +53,7 @@ class Livebox extends AbstractCollector
     protected function collectDeviceInfo(CollectorRegistry $registry) {
         $result = json_decode($this->execCommand('sysbus.DeviceInfo:get'), true);
         if (!is_array($result) || !is_array($result['status'])) {
-            throw new \Exception("Cannot process command output.");
+            throw new Exception("Cannot process command output.");
         }
 
         // Software Version
@@ -115,7 +115,7 @@ class Livebox extends AbstractCollector
 
         $result = json_decode($this->execCommand('sysbus.Hosts.Host:get'), JSON_OBJECT_AS_ARRAY);
         if (!is_array($result) || !is_array($result['status'])) {
-            throw new \Exception("Cannot process command output.");
+            throw new Exception("Cannot process command output.");
         }
         foreach ($result['status'] as $hostInfo) {
             $labels = $this->getCommonLabels() + [

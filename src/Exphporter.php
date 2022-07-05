@@ -2,7 +2,6 @@
 
 namespace Arrakis\Exphporter;
 
-use Arrakis\Exphporter\Collector\CollectorInterface;
 use Symfony\Component\Yaml\Yaml;
 use TweedeGolf\PrometheusClient\CollectorRegistry;
 use TweedeGolf\PrometheusClient\Format\TextFormatter;
