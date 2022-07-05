@@ -24,10 +24,14 @@ class DiskUsage extends AbstractCollector
                 if ($rc && empty($pathConfig['ignore_errors'])) {
                     throw new Exception('du returned an error code: ' . $rc);
                 }
-
+                
+                $value = array_pop($output);
+                if ($value === null) {
+                    throw new Exception('Invalid or missing output from "du".');
+                }
                 $this->saveScrapeState($pathConfig['path'], $scrapeData = [
                     'last_scrape' => time(),
-                    'usage_bytes' => preg_replace('/^(\d+).*/', '$1', array_pop($output)),
+                    'usage_bytes' => preg_replace('/^(\d+).*/', '$1', $value),
                 ]);
             } else {
                 $scrapeData = $this->loadScrapeState($pathConfig['path']);
