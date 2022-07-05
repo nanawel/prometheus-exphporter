@@ -12,6 +12,7 @@ collectors:
     #- Arrakis\Exphporter\Collector\Packages
     #- Arrakis\Exphporter\Collector\RaspberryPiHealth
     #- Arrakis\Exphporter\Collector\SpeedtestCli
+    #- Arrakis\Exphporter\Collector\Usbtenkiget
     #- Arrakis\Exphporter\Collector\V4l2ctl
 
   configuration:
@@ -85,6 +86,19 @@ collectors:
       speedtest_path: # Leave empty for auto-detection in PATH
       scrape_freq: 3600
       force_accept_gdpr: true
+    
+    Arrakis\Exphporter\Collector\Usbtenkiget:
+        #usbtenkiget_path: ...
+        # Check "usbtenkiget -h" output for more info about units
+        units:
+          temperature: default
+          pressure: default
+          frequency: default
+          length: default
+        sensors:
+          - usb_serial: auto
+            name: some sensor
+            channels: [0]
 
     Arrakis\Exphporter\Collector\V4l2ctl:
       devices:
