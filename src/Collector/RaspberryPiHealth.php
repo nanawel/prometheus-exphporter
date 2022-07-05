@@ -7,8 +7,8 @@ use TweedeGolf\PrometheusClient\PrometheusException;
 
 class RaspberryPiHealth extends AbstractCollector
 {
-    const DEFAULT_VCGENCMD_PATH = '/opt/vc/bin/vcgencmd';
-    const DEFAULT_METRICS = [
+    public const DEFAULT_VCGENCMD_PATH = '/opt/vc/bin/vcgencmd';
+    public const DEFAULT_METRICS = [
         'throttled' => true,
         'temp' =>  true,
         'clock' => [
@@ -19,7 +19,7 @@ class RaspberryPiHealth extends AbstractCollector
         ]
     ];
 
-    const METRICS_CMD = [
+    public const METRICS_CMD = [
         'throttled' => 'get_throttled',
         'temp'      => 'measure_temp',
         'clock'     => 'measure_clock',
@@ -27,10 +27,10 @@ class RaspberryPiHealth extends AbstractCollector
     ];
 
     public function isAvailable() {
-        return $this->commandExists($this->getVcgencmdPath());
+        return $this->commandExists($this->getBinPath());
     }
 
-    public function getVcgencmdPath() {
+    public function getBinPath() {
         return $this->config['vcgencmd_path'] ?? self::DEFAULT_VCGENCMD_PATH;
     }
 
@@ -77,7 +77,7 @@ class RaspberryPiHealth extends AbstractCollector
             if ($arg) {
                 $command = sprintf(
                     '%s %s %s',
-                    $this->getVcgencmdPath(),
+                    $this->getBinPath(),
                     self::METRICS_CMD[$type],
                     is_string($arg) ? $arg : ''
                 );

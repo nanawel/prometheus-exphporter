@@ -9,18 +9,17 @@ use TweedeGolf\PrometheusClient\CollectorRegistry;
  */
 class SpeedtestCli extends AbstractCollector
 {
-    const DEFAULT_UPDATE_DELAY = 60 * 60;  // 1 hour
-    const DEFAULT_SCRAPE_NAME = 'default';
+    public const DEFAULT_SPEEDTEST_BIN_PATH = 'speedtest';
+    public const DEFAULT_UPDATE_DELAY = 60 * 60;  // 1 hour
+    public const DEFAULT_SCRAPE_NAME = 'default';
 
-    public function isAvailable()
-    {
-        exec(sprintf('which %s', $this->getSpeedtestBinPath()), $output, $rc);
+    public function isAvailable() {
+        exec(sprintf('which %s', $this->getBinPath()), $output, $rc);
 
         return $rc === 0;
     }
 
-    public function collect(CollectorRegistry $registry)
-    {
+    public function collect(CollectorRegistry $registry) {
         $gaugeLabels = $this->getCommonLabels() + [
             'interface_internalIp' => null,
             'interface_name' => null,
@@ -121,8 +120,7 @@ class SpeedtestCli extends AbstractCollector
     /**
      * @return bool
      */
-    protected function shouldScrape()
-    {
+    protected function shouldScrape() {
         $delay = $this->config['scrape_freq']
             ?? self::DEFAULT_UPDATE_DELAY;
         if (!$delay) {
@@ -137,8 +135,7 @@ class SpeedtestCli extends AbstractCollector
     /**
      * @return string
      */
-    protected function execCommand()
-    {
+    protected function execCommand() {
         $options = '-f json-pretty';
         if ($this->config['force_accept_gdpr'] ?? true) {
             $options .= ' --accept-gdpr';
@@ -146,7 +143,7 @@ class SpeedtestCli extends AbstractCollector
 
         $fullCmd = sprintf(
             '%s %s 2>&1',
-            $this->getSpeedtestBinPath(),
+            $this->getBinPath(),
             $options
         );
 
@@ -177,12 +174,7 @@ class SpeedtestCli extends AbstractCollector
     /**
      * @return string|null
      */
-    protected function getSpeedtestBinPath()
-    {
-        if (empty($this->config['speedtest_path'])) {
-            return 'speedtest';
-        }
-
-        return $this->config['speedtest_path'];
+    public function getBinPath() {
+        return $this->config['speedtest_path'] ?? self::DEFAULT_SPEEDTEST_BIN_PATH;
     }
 }
