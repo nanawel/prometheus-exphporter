@@ -26,15 +26,20 @@ class Usbtenkiget extends AbstractCollector
                 $cmdArgs = $this->getCmdArgs($sensorConfig, $channelId);
                 $output = null;
 
-                exec(implode(' ', $cmdArgs), $output, $rc);
+                $cmd = implode(' ', $cmdArgs);
+                exec($cmd, $output, $rc);
                 if ($rc !== 0) {
-                    $this->log(implode("\n", $output), 'ERROR');
-                    throw new Exception("usbtenkiget returned an error code: $rc");
+                    // usbtenkiget always returns code 255 for no reason, so just ignore that
                 }
                 $value = current($output);
 
-                $registry->getGauge('usbtenkiget_sensor')
-                  ->set($value, $this->getGaugeLabels($sensorConfig, $sensorId, $channelId));
+                if (!is_numeric($value)) {
+                    $this->log('Unable to parse usbtenkiget output: ' . implode("\n", $output), 'ERROR');
+                    $this->log('Command was: ' . $cmd, 'ERROR');
+                } else {
+                    $registry->getGauge('usbtenkiget_sensor')
+                      ->set($value, $this->getGaugeLabels($sensorConfig, $sensorId, $channelId));
+                }
             }
         }
     }
