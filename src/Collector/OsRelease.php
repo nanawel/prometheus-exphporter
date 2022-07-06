@@ -12,14 +12,17 @@ class OsRelease extends AbstractCollector
 
     public function collect(CollectorRegistry $registry)
     {
-        $data = array_reduce(array_filter(explode("\n", file_get_contents('/etc/os-release'))), function($carry = [], $item) {
-            list($key, $value) = array_map(function($el) {
-                return trim($el, '"');
-            }, explode('=', $item));
-            $carry["os_release_{$key}"] = $value;
+        $data = array_reduce(
+            array_filter(explode("\n", file_get_contents('/etc/os-release'))),
+            function($carry = [], $item = null) {
+                list($key, $value) = array_map(function($el) {
+                    return trim($el, '"');
+                }, explode('=', $item));
+                $carry["os_release_{$key}"] = $value;
 
-            return $carry;
-        });
+                return $carry;
+            }
+        );
 
         $data += $this->getCommonLabels();
 
