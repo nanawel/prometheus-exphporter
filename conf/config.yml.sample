@@ -88,17 +88,17 @@ collectors:
       force_accept_gdpr: true
     
     Arrakis\Exphporter\Collector\Usbtenkiget:
-        #usbtenkiget_path: ...
-        # Check "usbtenkiget -h" output for more info about units
-        units:
-          temperature: default
-          pressure: default
-          frequency: default
-          length: default
-        sensors:
-          - usb_serial: auto
-            name: some sensor
-            channels: [0]
+      #usbtenkiget_path: ...
+      # Check "usbtenkiget -h" output for more info about units
+      units:
+        temperature: default
+        pressure: default
+        frequency: default
+        length: default
+      sensors:
+        - usb_serial: auto
+        name: some sensor
+        channels: [0]
 
     Arrakis\Exphporter\Collector\V4l2ctl:
       devices:
