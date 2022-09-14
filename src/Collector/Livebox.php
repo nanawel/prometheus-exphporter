@@ -67,10 +67,6 @@ class Livebox extends AbstractCollector
             ->set($result['ExternalIPAddress'] ? 1 : 0, $this->getCommonLabels());
     }
 
-    protected function parseInfoOutput($infoOutput) {
-
-    }
-
     protected function collectWifiStatus(CollectorRegistry $registry) {
         $result = json_decode($this->execCommand('-wifistate'), true);
 
@@ -167,19 +163,6 @@ class Livebox extends AbstractCollector
     }
 
     protected function collectDslInfo(CollectorRegistry $registry) {
-        $labels = [
-            'way' => null,
-        ];
-
-        $registry->createGauge(
-            'livebox_dsl_rate',
-            array_keys($this->getCommonLabels() + $labels),
-            null,
-            null,
-            CollectorRegistry::DEFAULT_STORAGE,
-            true
-        );
-
         $result = json_decode($this->execCommand('sysbus.Devices.Device.HGW:get'), true);
         if (!is_array($result) || !isset($result['status']) || !is_array($result['status'])) {
             throw new Exception("Cannot process command output.");
@@ -190,16 +173,48 @@ class Livebox extends AbstractCollector
             return;
         }
 
+        $utcTz = new \DateTimeZone('UTC');
+        $labels = [
+            'way' => null,
+        ];
+
+        // Current rates
+        $registry->createGauge(
+            'livebox_dsl_rate',
+            array_keys($this->getCommonLabels() + $labels),
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
         $registry->getGauge('livebox_dsl_rate')
             ->set($result['status']['DownstreamCurrRate'], $this->getCommonLabels() + [
                 'way' => 'down'
             ]);
-
         $registry->getGauge('livebox_dsl_rate')
             ->set($result['status']['UpstreamCurrRate'], $this->getCommonLabels() + [
                 'way' => 'up'
             ]);
 
+        // Max rates
+        $registry->createGauge(
+            'livebox_dsl_rate_max',
+            array_keys($this->getCommonLabels() + $labels),
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
+        $registry->getGauge('livebox_dsl_rate_max')
+            ->set($result['status']['DownstreamMaxBitRate'], $this->getCommonLabels() + [
+                'way' => 'down'
+            ]);
+        $registry->getGauge('livebox_dsl_rate_max')
+            ->set($result['status']['UpstreamMaxBitRate'], $this->getCommonLabels() + [
+                'way' => 'up'
+            ]);
+
+        // Last change (timestamp)
         $registry->createGauge(
             'livebox_dsl_lastchange',
             array_keys($this->getCommonLabels() + ['date_iso' => null]),
@@ -210,10 +225,63 @@ class Livebox extends AbstractCollector
         );
         $registry->getGauge('livebox_dsl_lastchange')
             ->set(
-                (new \DateTimeImmutable($result['status']['LastChanged']))->getTimestamp(),
+                (new \DateTimeImmutable($result['status']['LastChanged'], $utcTz))->getTimestamp(),
                 $this->getCommonLabels() + ['date_iso' => $result['status']['LastChanged']]
             );
 
+        // Last change (time)
+        $registry->createGauge(
+            'livebox_dsl_lastchange_time',
+            array_keys($this->getCommonLabels()),
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
+        $registry->getGauge('livebox_dsl_lastchange_time')
+            ->set(
+                (new \DateTimeImmutable('now', $utcTz))->getTimestamp()
+                - (new \DateTimeImmutable($result['status']['LastChanged'], $utcTz))->getTimestamp(),
+                $this->getCommonLabels()
+            );
+
+        // Internet Up
+        $registry->createGauge(
+            'livebox_internet_up',
+            array_keys($this->getCommonLabels()),
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
+        $registry->getGauge('livebox_internet_up')
+            ->set($result['status']['Internet'] ? 1 : 0, $this->getCommonLabels());
+
+        // Telephony Up
+        $registry->createGauge(
+            'livebox_telephony_up',
+            array_keys($this->getCommonLabels()),
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
+        $registry->getGauge('livebox_telephony_up')
+            ->set($result['status']['Telephony'] ? 1 : 0, $this->getCommonLabels());
+
+        // IPTV Up
+        $registry->createGauge(
+            'livebox_iptv_up',
+            array_keys($this->getCommonLabels()),
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
+        $registry->getGauge('livebox_iptv_up')
+            ->set($result['status']['IPTV'] ? 1 : 0, $this->getCommonLabels());
+
+        // DSL Up (aggregation)
         $registry->createGauge(
             'livebox_dsl_up',
             array_keys($this->getCommonLabels()),
@@ -223,6 +291,7 @@ class Livebox extends AbstractCollector
             true
         );
         $upConditions = $result['status']['Active']
+            && $result['status']['Internet']
             && $result['status']['LinkState'] === 'up'
             && $result['status']['ConnectionState'] === 'Bound'
         ;
@@ -270,13 +339,5 @@ class Livebox extends AbstractCollector
         }
 
         return $output;
-    }
-
-    /**
-     * @param string $rawRateValue
-     * @return float
-     */
-    protected static function rateToKb($rawRateValue) {
-
     }
 }
