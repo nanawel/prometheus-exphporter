@@ -6,6 +6,8 @@ use TweedeGolf\PrometheusClient\CollectorRegistry;
 
 class Livebox extends AbstractCollector
 {
+    public const DEFAULT_LIVEBOX_URL = 'http://192.168.1.1/';
+
     public function isAvailable() {
         return !empty($this->config['sysbus_path'])
             && !empty($this->config['sysbus_settings']);
@@ -14,9 +16,14 @@ class Livebox extends AbstractCollector
     public function collect(CollectorRegistry $registry)
     {
         if (empty($this->config['sysbus_settings']['url_livebox'])) {
-            $this->config['sysbus_settings']['url_livebox'] = 'http://192.168.1.1/';
+            $this->config['sysbus_settings']['url_livebox'] = self::DEFAULT_LIVEBOX_URL;
         }
 
+        try {
+            $this->collectIpStatus($registry);
+        } catch (\Throwable $e) {
+            $this->log('Cannot retrieve IP status: ' . $e->getMessage(), 'ERROR');
+        }
         try {
             $this->collectWifiStatus($registry);
         } catch (\Throwable $e) {
@@ -32,6 +39,36 @@ class Livebox extends AbstractCollector
         } catch (\Throwable $e) {
             $this->log('Cannot retrieve hosts status: ' . $e->getMessage(), 'ERROR');
         }
+        try {
+            $this->collectDslInfo($registry);
+        } catch (\Throwable $e) {
+            $this->log('Cannot retrieve DSL info: ' . $e->getMessage(), 'ERROR');
+        }
+    }
+
+    protected function collectIpStatus(CollectorRegistry $registry) {
+        $result = $this->parseInfoOutput($this->execCommand('-info'));
+
+        $labels = array_merge(
+            array_keys($this->getCommonLabels()),
+            ['ip']
+        );
+
+        $registry->createGauge(
+            'livebox_ip_status',
+            $labels,
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
+
+        $registry->getGauge('livebox_ip_external')
+            ->set($result['ExternalIPAddress'] ? 1 : 0, $this->getCommonLabels());
+    }
+
+    protected function parseInfoOutput($infoOutput) {
+
     }
 
     protected function collectWifiStatus(CollectorRegistry $registry) {
@@ -52,7 +89,7 @@ class Livebox extends AbstractCollector
 
     protected function collectDeviceInfo(CollectorRegistry $registry) {
         $result = json_decode($this->execCommand('sysbus.DeviceInfo:get'), true);
-        if (!is_array($result) || !is_array($result['status'])) {
+        if (!is_array($result) || !isset($result['status']) || !is_array($result['status'])) {
             throw new Exception("Cannot process command output.");
         }
 
@@ -114,7 +151,7 @@ class Livebox extends AbstractCollector
         );
 
         $result = json_decode($this->execCommand('sysbus.Hosts.Host:get'), JSON_OBJECT_AS_ARRAY);
-        if (!is_array($result) || !is_array($result['status'])) {
+        if (!is_array($result) || !isset($result['status']) || !is_array($result['status'])) {
             throw new Exception("Cannot process command output.");
         }
         foreach ($result['status'] as $hostInfo) {
@@ -127,6 +164,70 @@ class Livebox extends AbstractCollector
             $registry->getGauge('livebox_hosts')
                 ->set($hostInfo['Active'] ? 1 : 0, $labels);
         }
+    }
+
+    protected function collectDslInfo(CollectorRegistry $registry) {
+        $labels = [
+            'way' => null,
+        ];
+
+        $registry->createGauge(
+            'livebox_dsl_rate',
+            array_keys($this->getCommonLabels() + $labels),
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
+
+        $result = json_decode($this->execCommand('sysbus.Devices.Device.HGW:get'), true);
+        if (!is_array($result) || !isset($result['status']) || !is_array($result['status'])) {
+            throw new Exception("Cannot process command output.");
+        }
+
+        if ($result['status']['LinkType'] !== 'dsl') {
+            // Don't know atm if the other metrics are usable when not in DSL mode, so exit early
+            return;
+        }
+
+        $registry->getGauge('livebox_dsl_rate')
+            ->set($result['status']['DownstreamCurrRate'], $this->getCommonLabels() + [
+                'way' => 'down'
+            ]);
+
+        $registry->getGauge('livebox_dsl_rate')
+            ->set($result['status']['UpstreamCurrRate'], $this->getCommonLabels() + [
+                'way' => 'up'
+            ]);
+
+        $registry->createGauge(
+            'livebox_dsl_lastchange',
+            array_keys($this->getCommonLabels() + ['date_iso' => null]),
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
+        $registry->getGauge('livebox_dsl_lastchange')
+            ->set(
+                (new \DateTimeImmutable($result['status']['LastChanged']))->getTimestamp(),
+                $this->getCommonLabels() + ['date_iso' => $result['status']['LastChanged']]
+            );
+
+        $registry->createGauge(
+            'livebox_dsl_up',
+            array_keys($this->getCommonLabels()),
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
+        $upConditions = $result['status']['Active']
+            && $result['status']['LinkState'] === 'up'
+            && $result['status']['ConnectionState'] === 'Bound'
+        ;
+        $registry->getGauge('livebox_dsl_up')
+            ->set($upConditions ? 1 : 0, $this->getCommonLabels());
     }
 
     /**
@@ -169,5 +270,13 @@ class Livebox extends AbstractCollector
         }
 
         return $output;
+    }
+
+    /**
+     * @param string $rawRateValue
+     * @return float
+     */
+    protected static function rateToKb($rawRateValue) {
+
     }
 }
