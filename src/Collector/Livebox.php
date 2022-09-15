@@ -282,9 +282,13 @@ class Livebox extends AbstractCollector
             ->set($result['status']['IPTV'] ? 1 : 0, $this->getCommonLabels());
 
         // DSL Up (aggregation)
+        $labels = [
+            'linkstate' => null,
+            'connectionstate' => null,
+        ];
         $registry->createGauge(
             'livebox_dsl_up',
-            array_keys($this->getCommonLabels()),
+            array_keys($this->getCommonLabels() + $labels),
             null,
             null,
             CollectorRegistry::DEFAULT_STORAGE,
@@ -294,9 +298,17 @@ class Livebox extends AbstractCollector
             && $result['status']['Internet']
             && $result['status']['LinkState'] === 'up'
             && $result['status']['ConnectionState'] === 'Bound'
+            && $result['status']['DownstreamCurrRate'] > 0
+            && $result['status']['UpstreamCurrRate'] > 0
         ;
         $registry->getGauge('livebox_dsl_up')
-            ->set($upConditions ? 1 : 0, $this->getCommonLabels());
+            ->set(
+                $upConditions ? 1 : 0,
+                $this->getCommonLabels() + [
+                    'linkstate' => $result['status']['LinkState'],
+                    'connectionstate' => $result['status']['ConnectionState'],
+                ]
+            );
     }
 
     /**
