@@ -97,8 +97,8 @@ collectors:
         length: default
       sensors:
         - usb_serial: auto
-        name: some sensor
-        channels: [0]
+          name: some sensor
+          channels: [0]
 
     Arrakis\Exphporter\Collector\V4l2ctl:
       devices:
