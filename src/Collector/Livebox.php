@@ -20,11 +20,6 @@ class Livebox extends AbstractCollector
         }
 
         try {
-            $this->collectIpStatus($registry);
-        } catch (\Throwable $e) {
-            $this->log('Cannot retrieve IP status: ' . $e->getMessage(), 'ERROR');
-        }
-        try {
             $this->collectWifiStatus($registry);
         } catch (\Throwable $e) {
             $this->log('Cannot retrieve WIFI status: ' . $e->getMessage(), 'ERROR');
@@ -44,27 +39,6 @@ class Livebox extends AbstractCollector
         } catch (\Throwable $e) {
             $this->log('Cannot retrieve DSL info: ' . $e->getMessage(), 'ERROR');
         }
-    }
-
-    protected function collectIpStatus(CollectorRegistry $registry) {
-        $result = $this->parseInfoOutput($this->execCommand('-info'));
-
-        $labels = array_merge(
-            array_keys($this->getCommonLabels()),
-            ['ip']
-        );
-
-        $registry->createGauge(
-            'livebox_ip_status',
-            $labels,
-            null,
-            null,
-            CollectorRegistry::DEFAULT_STORAGE,
-            true
-        );
-
-        $registry->getGauge('livebox_ip_external')
-            ->set($result['ExternalIPAddress'] ? 1 : 0, $this->getCommonLabels());
     }
 
     protected function collectWifiStatus(CollectorRegistry $registry) {
@@ -168,8 +142,9 @@ class Livebox extends AbstractCollector
             throw new Exception("Cannot process command output.");
         }
 
-        if ($result['status']['LinkType'] !== 'dsl') {
+        if (!in_array($result['status']['LinkType'], ['dsl', 'gpon'])) {
             // Don't know atm if the other metrics are usable when not in DSL mode, so exit early
+            $this->log('Unsupported LinkType for DSL info retreval: ' . $result['status']['LinkType'], E_WARNING);
             return;
         }
 
