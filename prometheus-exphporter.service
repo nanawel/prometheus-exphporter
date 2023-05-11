@@ -1,8 +1,12 @@
 [Unit]
 Description=Prometheus Exphporter
 After=local-fs.target
+StartLimitInterval=200
+StartLimitBurst=5
 
 [Service]
+Restart=always
+RestartSec=30
 PermissionsStartOnly=true
 ExecStart=make -C {{exphporter_dir}} start
 
