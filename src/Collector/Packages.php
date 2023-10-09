@@ -31,10 +31,15 @@ class Packages extends AbstractCollector
 
     protected function getUpgradablePackages_debian() {
         if ($this->shouldUpdate()) {
-            $this->saveState(['last_update' => time()]);
             exec('apt update');
+            exec('apt list --upgradable', $output);
+            $this->saveState([
+                'last_update' => time(),
+                'output' => $output
+            ]);
+        } else {
+            $output = $this->loadState()['output'] ?? [];
         }
-        exec('apt list --upgradable', $output);
 
         return $output;
     }
@@ -49,10 +54,15 @@ class Packages extends AbstractCollector
 
     protected function getUpgradablePackages_arch() {
         if ($this->shouldUpdate()) {
-            $this->saveState(['last_update' => time()]);
             exec('pacman -Sy');
+            exec('pacman -Qu', $output);
+            $this->saveState([
+                'last_update' => time(),
+                'output' => $output
+            ]);
+        } else {
+            $output = $this->loadState()['output'] ?? [];
         }
-        exec('pacman -Qu', $output);
 
         return $output;
     }
