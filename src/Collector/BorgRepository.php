@@ -131,6 +131,11 @@ class BorgRepository extends AbstractCollector
                         ['list --json', $repositoryConfig['path']], $repositoryConfig['passphrase_file']),
                         true
                     );
+                    if (!is_array($result['archives'])) {
+                        throw new Exception(
+                            'Could not retrieve archives from repository at ' . $repositoryConfig['path']
+                        );
+                    }
                     $this->saveScrapeState($scrapeName, $scrapeData = [
                         'last_scrape' => time(),
                         'metrics' => $result,
@@ -141,6 +146,9 @@ class BorgRepository extends AbstractCollector
 
                     // Hopefully this error is temporary (e.g. lock) so use latest scraped data instead
                     $scrapeData = $this->loadScrapeState($scrapeName);
+                    if (!is_array($scrapeData['archives'])) {
+                        continue;
+                    }
                     $scrapeData['return_code'] = $e->getCode();
                     $this->saveScrapeState($scrapeName, $scrapeData);
                 }
