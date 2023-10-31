@@ -9,7 +9,8 @@ class Livebox extends AbstractCollector
     public const DEFAULT_LIVEBOX_URL = 'http://192.168.1.1/';
 
     public function isAvailable() {
-        return !empty($this->config['sysbus_path']);
+        return !empty($this->config['sysbus_path'])
+            && !empty($this->config['sysbus_settings']);
     }
 
     public function collect(CollectorRegistry $registry)
