@@ -30,6 +30,11 @@ class Livebox extends AbstractCollector
             $this->log('Cannot retrieve device info: ' . $e->getMessage(), 'ERROR');
         }
         try {
+            $this->collectIPv6Info($registry);
+        } catch (\Throwable $e) {
+            $this->log('Cannot retrieve IPv6 info: ' . $e->getMessage(), 'ERROR');
+        }
+        try {
             $this->collectHosts($registry);
         } catch (\Throwable $e) {
             $this->log('Cannot retrieve hosts status: ' . $e->getMessage(), 'ERROR');
@@ -89,8 +94,14 @@ class Livebox extends AbstractCollector
         $registry->getGauge('livebox_uptime')
             ->set($result['status']['UpTime'], $labels);
 
-        // External IP Address
-        $labels = $this->getCommonLabels() + ['external_ip_address' => $result['status']['ExternalIPAddress']];
+        // External IPv4 Address
+        if (!empty($result['status']['ExternalIPAddress'])) {
+            $labels = $this->getCommonLabels() + ['external_ip_address' => $result['status']['ExternalIPAddress']];
+            $value = 1;
+        } else {
+            $labels = $this->getCommonLabels() + ['external_ip_address' => ''];
+            $value = 0;
+        }
         $registry->createGauge(
             'livebox_external_ip_address',
             array_keys($labels),
@@ -100,7 +111,32 @@ class Livebox extends AbstractCollector
             true
         );
         $registry->getGauge('livebox_external_ip_address')
-            ->set(1, $labels);
+            ->set($value, $labels);
+    }
+
+    protected function collectIPv6Info(CollectorRegistry $registry) {
+        $result = json_decode($this->execCommand('NMC.IPv6:get'), true);
+        if (!is_array($result) || !isset($result['data']) || !is_array($result['data'])) {
+            throw new Exception("Cannot process command output.");
+        }
+
+        if (!empty($result['data']['IPv6Address'])) {
+            $labels = $this->getCommonLabels() + ['ipv6_address' => $result['data']['IPv6Address']];
+            $value = 1;
+        } else {
+            $labels = $this->getCommonLabels() + ['ipv6_address' => ''];
+            $value = 0;
+        }
+        $registry->createGauge(
+            'livebox_ipv6_address',
+            array_keys($labels),
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
+        $registry->getGauge('livebox_ipv6_address')
+            ->set($value, $labels);
     }
 
     protected function collectHosts(CollectorRegistry $registry) {
