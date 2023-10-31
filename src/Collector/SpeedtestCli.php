@@ -61,18 +61,6 @@ class SpeedtestCli extends AbstractCollector
                 'elapsed'
             ],
         ];
-        foreach ($gaugeResultDataPaths as $firstLevelKey => $secondLevelKeys) {
-            foreach ($secondLevelKeys as $secondLevelKey) {
-                $registry->createGauge(
-                    sprintf('speedtest_%s_%s', $firstLevelKey, $secondLevelKey),
-                    array_keys($gaugeLabels),
-                    null,
-                    null,
-                    CollectorRegistry::DEFAULT_STORAGE,
-                    true
-                );
-            }
-        }
 
         if ($this->shouldScrape()) {
             try {
@@ -97,6 +85,19 @@ class SpeedtestCli extends AbstractCollector
             ->set($scrapeData['return_code'], $this->getCommonLabels());
 
         if ($scrapeData['return_code'] === 0) {
+            foreach ($gaugeResultDataPaths as $firstLevelKey => $secondLevelKeys) {
+                foreach ($secondLevelKeys as $secondLevelKey) {
+                    $registry->createGauge(
+                        sprintf('speedtest_%s_%s', $firstLevelKey, $secondLevelKey),
+                        array_keys($gaugeLabels),
+                        null,
+                        null,
+                        CollectorRegistry::DEFAULT_STORAGE,
+                        true
+                    );
+                }
+            }
+
             // Prepare labels once with results
             array_walk($gaugeLabels, function (&$v, $k) use ($scrapeData) {
                 list($firstLevelKey, $secondLevelKey) = explode('_', $k);
