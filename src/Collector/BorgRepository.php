@@ -15,6 +15,7 @@ class BorgRepository extends AbstractCollector
     public function collect(CollectorRegistry $registry) {
         $this->collectRepositoryInfo($registry);
         $this->collectRepositoryContent($registry);
+        $this->collectRepositoryExternalSize($registry);
     }
 
     protected function collectRepositoryInfo(CollectorRegistry $registry) {
@@ -177,6 +178,59 @@ class BorgRepository extends AbstractCollector
                     $labels + ['last_modified' => $lastModified]
                 )
             ;
+        }
+    }
+
+    protected function collectRepositoryExternalSize(CollectorRegistry $registry) {
+        $labels = $this->getCommonLabels() + [
+            'repository_name' => null,
+        ];
+
+        $registry->createGauge(
+            'borg_repository_external_size',
+            array_keys($labels),
+            null,
+            null,
+            CollectorRegistry::DEFAULT_STORAGE,
+            true
+        );
+
+        foreach ($this->config['repositories'] as $repositoryConfig) {
+            $labels['repository_name'] = $repositoryConfig['name'];
+            $scrapeName = $repositoryConfig['name'] . '_repository_external_size';
+
+            if ($this->shouldScrape($scrapeName)) {
+                try {
+                    exec("du -sb {$repositoryConfig['path']}", $output, $rc);
+
+                    if ($rc === 0) {
+                        $value = array_pop($output);
+                    }
+                    if (empty($value)) {
+                        throw new Exception('Invalid or missing output from "du".', $rc);
+                    }
+
+                    $this->saveScrapeState($scrapeName, $scrapeData = [
+                        'last_scrape' => time(),
+                        'usage_bytes' => preg_replace('/^(\d+).*/', '$1', $value),
+                        'return_code' => 0
+                    ]);
+                } catch (Exception $e) {
+                    $this->log($e->getMessage(), 'ERROR');
+
+                    $scrapeData = $this->loadScrapeState($scrapeName);
+                    if (!is_array($scrapeData)) {
+                        continue;
+                    }
+                    $scrapeData['return_code'] = $e->getCode();
+                    $this->saveScrapeState($scrapeName, $scrapeData);
+                }
+            } else {
+                $scrapeData = $this->loadScrapeState($scrapeName);
+            }
+
+            $registry->getGauge('borg_repository_external_size')
+                ->set($scrapeData['usage_bytes'], $labels);
         }
     }
 
