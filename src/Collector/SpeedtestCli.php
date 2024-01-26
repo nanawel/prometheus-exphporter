@@ -65,6 +65,9 @@ class SpeedtestCli extends AbstractCollector
         if ($this->shouldScrape()) {
             try {
                 $result = json_decode($this->execCommand(), true);
+                if (!$result) {
+                    throw new Exception('Empty or invalid JSON returned from speedtest!');
+                }
                 $this->saveScrapeState(self::DEFAULT_SCRAPE_NAME, $scrapeData = [
                     'last_scrape' => time(),
                     'result' => $result,
