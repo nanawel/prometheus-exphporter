@@ -147,7 +147,7 @@ class BorgRepository extends AbstractCollector
 
                     // Hopefully this error is temporary (e.g. lock) so use latest scraped data instead
                     $scrapeData = $this->loadScrapeState($scrapeName);
-                    if (!is_array($scrapeData['archives'])) {
+                    if (empty($scrapeData['archives']) || !is_array($scrapeData['archives'])) {
                         continue;
                     }
                     $scrapeData['return_code'] = $e->getCode();
