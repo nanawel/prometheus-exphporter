@@ -11,7 +11,7 @@
         "php": "^7.1 || ^8.0",
         "ext-json": "*",
         "ext-posix": "*",
-        "tweedegolf/prometheus-client": "dev-master#6e4021b",
+        "tweedegolf/prometheus-client": "dev-master#c508f61",
         "symfony/deprecation-contracts": "^2.1",
         "symfony/yaml": "^5"
     },
