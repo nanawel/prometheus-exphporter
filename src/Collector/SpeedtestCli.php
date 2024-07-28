@@ -14,9 +14,7 @@ class SpeedtestCli extends AbstractCollector
     public const DEFAULT_SCRAPE_NAME = 'default';
 
     public function isAvailable() {
-        exec(sprintf('which %s', $this->getBinPath()), $output, $rc);
-
-        return $rc === 0;
+        $this->commandExists($this->getBinPath());
     }
 
     public function collect(CollectorRegistry $registry) {
