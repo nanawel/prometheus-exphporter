@@ -6,7 +6,7 @@ use TweedeGolf\PrometheusClient\CollectorRegistry;
 
 class FindCountByDate extends AbstractCollector
 {
-    public const int DEFAULT_UPDATE_DELAY = 0; // No limit
+    public const DEFAULT_UPDATE_DELAY = 0; // No limit
 
     public function collect(CollectorRegistry $registry) {
         $registry->createGauge(
