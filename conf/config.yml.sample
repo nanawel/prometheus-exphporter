@@ -48,10 +48,12 @@ collectors:
           path: /tmp
           opts:
             '-name': '*.jar'
+          update_freq: 600
         - name: '*CHROMIUM* in /tmp'
           path: /tmp
           opts:
             '-iname': '*CHROMIUM*'
+          update_freq: 3600
 
     Arrakis\Exphporter\Collector\FindCountByDate:
       paths:
@@ -59,6 +61,7 @@ collectors:
           path: /var/motion
           opts:
             '-name': '*-*-*-*-*.jpg'
+          update_freq: 300
           # Available values for group_by: see https://www.php.net/manual/dateinterval.construct.php
           # Example below means "every 10 minutes"
           group_by: PT10M

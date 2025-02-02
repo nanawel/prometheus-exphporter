@@ -23,11 +23,31 @@ class FindCount extends AbstractCollector
             }
             $pathConfig += ['name' => ''];
 
-            exec(
-                sprintf('find %s %s | wc -l', $pathConfig['path'], $this->optsToShellArgs($pathConfig['opts'] ?? [])),
-                $output,
-                $rc
+            $command = sprintf(
+                'find %s %s | wc -l',
+                $pathConfig['path'],
+                $this->optsToShellArgs($pathConfig['opts'] ?? [])
             );
+            $stateConfigKey = md5($command);
+            
+            $state = $this->loadState() ?? [];
+            if ($this->shouldUpdate($stateConfigKey, $pathConfig)) {
+                exec(
+                    $command,
+                    $output,
+                    $rc
+                );
+                $state[$stateConfigKey] = [
+                    'last_update' => time(),
+                    'output' => $output,
+                    'rc' => $rc
+                ];
+                $this->saveState($state);
+            } else {
+                $output = $this->loadState()[$stateConfigKey]['output'] ?? '';
+                $rc = $this->loadState()[$stateConfigKey]['rc'] ?? 0;
+            }
+
             if ($rc && empty($pathConfig['ignore_errors'])) {
                 throw new Exception('find returned an error code: ' . $rc);
             }
@@ -48,5 +68,21 @@ class FindCount extends AbstractCollector
         }
 
         return implode(' ', $return);
+    }
+
+    /**
+     * @return bool
+     */
+    protected function shouldUpdate(string $stateConfigKey, array $pathConfig = []) {
+        $delay = $pathConfig['update_freq']
+            ?? $this->config['update_freq']
+            ?? self::DEFAULT_UPDATE_DELAY;
+        if (!$delay) {
+            return true;
+        }
+
+        $lastUpdate = $this->loadState()[$stateConfigKey]['last_update'] ?? 0;
+
+        return  time() - $lastUpdate > $delay;
     }
 }

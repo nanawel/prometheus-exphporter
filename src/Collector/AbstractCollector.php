@@ -30,7 +30,7 @@ abstract class AbstractCollector implements CollectorInterface
      * @param mixed $data
      */
     protected function saveState($data) {
-        file_put_contents($this->getStateFile(), json_encode($data));
+        file_put_contents($this->getStateFile(), json_encode($data, JSON_PRETTY_PRINT));
 
         return $this;
     }

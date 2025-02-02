@@ -12,8 +12,7 @@ class Packages extends AbstractCollector
         return method_exists($this, 'getUpgradablePackages_' . $this->getDistroFlavour());
     }
 
-    public function collect(CollectorRegistry $registry)
-    {
+    public function collect(CollectorRegistry $registry) {
         $upgradablePackages = $this->{'getUpgradablePackages_' . $this->getDistroFlavour()}();
 
         $registry->createGauge(
