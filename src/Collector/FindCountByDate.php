@@ -17,11 +17,24 @@ class FindCountByDate extends AbstractCollector
             CollectorRegistry::DEFAULT_STORAGE,
             true
         );
+
+        $pathConfigs = [];
         foreach ($this->config['paths'] ?? [] as $pathConfig) {
             if (empty($pathConfig['path'])) {
                 $this->log('FindCountByDate: Missing path. Ignoring.', 'ERROR');
                 continue;
             }
+            $foundPaths = glob($pathConfig['path'], GLOB_ONLYDIR);
+            if (empty($foundPaths)) {
+                $this->log('FindCountByDate: Invalid or non-existent path. Ignoring.', 'ERROR');
+                continue;
+            }
+            foreach ($foundPaths as $fp) {
+                $pathConfigs[] = ['path' => $fp] + $pathConfig;
+            }
+        }
+
+        foreach ($pathConfigs as $pathConfig) {
             $pathConfig += ['name' => ''];
 
             $command = sprintf('find %s %s', $pathConfig['path'], $this->optsToShellArgs($pathConfig['opts'] ?? []));
