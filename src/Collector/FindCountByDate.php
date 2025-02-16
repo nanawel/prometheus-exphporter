@@ -34,13 +34,14 @@ class FindCountByDate extends AbstractCollector
             }
         }
 
+        $state = $this->loadState() ?? [];
         foreach ($pathConfigs as $pathConfig) {
             $pathConfig += ['name' => ''];
 
             $command = sprintf('find %s %s', $pathConfig['path'], $this->optsToShellArgs($pathConfig['opts'] ?? []));
+            $this->log("FindCountByDate: $command", 'DEBUG');
             $stateConfigKey = md5($command);
             
-            $state = $this->loadState() ?? [];
             if ($this->shouldUpdate($stateConfigKey, $pathConfig)) {
                 exec(
                     $command,
@@ -92,7 +93,12 @@ class FindCountByDate extends AbstractCollector
     protected function optsToShellArgs(array $opts) {
         $return = [];
         foreach ($opts as $opt => $value) {
-            $return[] = sprintf('%s %s', escapeshellarg($opt), escapeshellarg($value));
+            if ($value === null) {
+                // Special case for valueless flags (like "-not")
+                $return[] = sprintf('%s', escapeshellarg($opt));
+            } else {
+                $return[] = sprintf('%s %s', escapeshellarg($opt), escapeshellarg($value));
+            }
         }
 
         return implode(' ', $return);

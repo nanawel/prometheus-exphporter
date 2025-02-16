@@ -66,7 +66,12 @@ class FindCount extends AbstractCollector
     protected function optsToShellArgs(array $opts) {
         $return = [];
         foreach ($opts as $opt => $value) {
-            $return[] = sprintf('%s %s', escapeshellarg($opt), escapeshellarg($value));
+            if ($value === null) {
+                // Special case for valueless flags (like "-not")
+                $return[] = sprintf('%s', escapeshellarg($opt));
+            } else {
+                $return[] = sprintf('%s %s', escapeshellarg($opt), escapeshellarg($value));
+            }
         }
 
         return implode(' ', $return);
