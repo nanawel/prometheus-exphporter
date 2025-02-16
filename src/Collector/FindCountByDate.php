@@ -40,7 +40,7 @@ class FindCountByDate extends AbstractCollector
 
             $command = sprintf('find %s %s', $pathConfig['path'], $this->optsToShellArgs($pathConfig['opts'] ?? []));
             $this->log("FindCountByDate: $command", 'DEBUG');
-            $stateConfigKey = md5($command);
+            $stateConfigKey = md5(json_encode($pathConfig));
             
             if ($this->shouldUpdate($stateConfigKey, $pathConfig)) {
                 exec(

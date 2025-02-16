@@ -30,7 +30,7 @@ class FindCount extends AbstractCollector
                 $pathConfig['path'],
                 $this->optsToShellArgs($pathConfig['opts'] ?? [])
             );
-            $stateConfigKey = md5($command);
+            $stateConfigKey = md5(json_encode($pathConfig));
             
             $state = $this->loadState() ?? [];
             if ($this->shouldUpdate($stateConfigKey, $pathConfig)) {
