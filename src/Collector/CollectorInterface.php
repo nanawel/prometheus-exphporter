@@ -2,6 +2,7 @@
 
 namespace Arrakis\Exphporter\Collector;
 
+use Arrakis\Exphporter\Exphporter;
 use TweedeGolf\PrometheusClient\CollectorRegistry;
 
 interface CollectorInterface
@@ -9,7 +10,7 @@ interface CollectorInterface
     /**
      * @param array $config
      */
-    public function init(array $config);
+    public function init(Exphporter $exphporter, array $config);
 
     /**
      * @return bool

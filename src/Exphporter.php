@@ -19,7 +19,7 @@ class Exphporter
             try {
                 /** @var $collector CollectorInterface */
                 $collector = new $collectorClass();
-                $collector->init($config['collectors']['configuration'][$collectorClass] ?? []);
+                $collector->init($this, $config['collectors']['configuration'][$collectorClass] ?? []);
 
                 if ($collector->isAvailable()) {
                     $collector->collect($registry);
@@ -39,15 +39,15 @@ class Exphporter
      * @param string $message
      * @param string $level
      */
-    protected function log($message, $level = 'DEBUG') {
+    public function log($message, $level = 'DEBUG') {
         $msg = sprintf("%s [%s] %s\n", date('c'), $level, is_string($message) ? $message : json_encode($message));
         file_put_contents($this->getLogPath(), $msg, FILE_APPEND);
         if (getenv('EXPHPORTER_DEBUG')) {
-            file_put_contents(STDERR, $msg);
+            file_put_contents('php://stderr', $msg);
         }
     }
 
-    protected function getConfigPath(): string {
+    public function getConfigPath(): string {
         if (!$configFile = getenv('EXPHPORTER_CONFIG_PATH')) {
             $configFile = EXPHPORTER_BASE_DIR . '/conf/config.yml';
         }
@@ -57,7 +57,7 @@ class Exphporter
         return $configFile;
     }
 
-    protected function getLogPath(): string {
+    public function getLogPath(): string {
         if (!$logPath = getenv('EXPHPORTER_LOG_PATH')) {
             $logPath = EXPHPORTER_BASE_DIR . '/data/app.log';
         }

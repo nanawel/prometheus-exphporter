@@ -2,12 +2,17 @@
 
 namespace Arrakis\Exphporter\Collector;
 
+use Arrakis\Exphporter\Exphporter;
+
 abstract class AbstractCollector implements CollectorInterface
 {
     /** array */
-    protected $config;
+    protected array $config;
 
-    public function init(array $config) {
+    protected Exphporter $exphporter;
+
+    public function init(Exphporter $exphporter, array $config) {
+        $this->exphporter = $exphporter;
         $this->config = $config;
 
         return $this;
@@ -83,11 +88,7 @@ abstract class AbstractCollector implements CollectorInterface
      * @param string $level
      */
     protected function log($message, $level = 'DEBUG') {
-        file_put_contents(
-            EXPHPORTER_BASE_DIR . '/data/app.log',
-            sprintf("%s [%s] %s\n", date('c'), $level, is_string($message) ? $message : json_encode($message)),
-            FILE_APPEND
-        );
+        $this->exphporter->log($message, $level);
     }
 
     /**
