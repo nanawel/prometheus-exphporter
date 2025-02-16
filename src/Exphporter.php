@@ -11,11 +11,7 @@ class Exphporter
 {
     public function run()
     {
-        if (!is_readable($configFile = EXPHPORTER_BASE_DIR . '/conf/config.yml')) {
-            throw new \Exception('Cannot read config file. Did you create one?');
-        }
-
-        $config = Yaml::parseFile($configFile);
+        $config = Yaml::parseFile($this->getConfigPath());
 
         $registry = new CollectorRegistry(new InMemoryAdapter(), null, false);
 
@@ -49,5 +45,15 @@ class Exphporter
             sprintf("%s [%s] %s\n", date('c'), $level, is_string($message) ? $message : json_encode($message)),
             FILE_APPEND
         );
+    }
+
+    protected function getConfigPath(): string {
+        if (!$configFile = getenv('EXPHPORTER_CONFIG_PATH')) {
+            $configFile = EXPHPORTER_BASE_DIR . '/conf/config.yml';
+        }
+        if (!is_readable($configFile)) {
+            throw new \Exception('Cannot read config file. Did you create one?');
+        }
+        return $configFile;
     }
 }
