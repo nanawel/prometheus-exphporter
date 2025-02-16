@@ -40,11 +40,11 @@ class Exphporter
      * @param string $level
      */
     protected function log($message, $level = 'DEBUG') {
-        file_put_contents(
-            EXPHPORTER_BASE_DIR . '/data/app.log',
-            sprintf("%s [%s] %s\n", date('c'), $level, is_string($message) ? $message : json_encode($message)),
-            FILE_APPEND
-        );
+        $msg = sprintf("%s [%s] %s\n", date('c'), $level, is_string($message) ? $message : json_encode($message));
+        file_put_contents($this->getLogPath(), $msg, FILE_APPEND);
+        if (getenv('EXPHPORTER_DEBUG')) {
+            file_put_contents(STDERR, $msg);
+        }
     }
 
     protected function getConfigPath(): string {
@@ -55,5 +55,12 @@ class Exphporter
             throw new \Exception('Cannot read config file. Did you create one?');
         }
         return $configFile;
+    }
+
+    protected function getLogPath(): string {
+        if (!$logPath = getenv('EXPHPORTER_LOG_PATH')) {
+            $logPath = EXPHPORTER_BASE_DIR . '/data/app.log';
+        }
+        return $logPath;
     }
 }
