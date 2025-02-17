@@ -7,7 +7,7 @@ use TweedeGolf\PrometheusClient\CollectorRegistry;
 class FindCount extends AbstractCollector
 {
     public const DEFAULT_UPDATE_DELAY = 0; // No limit
-    
+
     public function collect(CollectorRegistry $registry)
     {
         $registry->createGauge(
@@ -31,23 +31,24 @@ class FindCount extends AbstractCollector
                 $this->optsToShellArgs($pathConfig['opts'] ?? [])
             );
             $stateConfigKey = md5(json_encode($pathConfig));
-            
-            $state = $this->loadState() ?? [];
+
+            unset($output);
             if ($this->shouldUpdate($stateConfigKey, $pathConfig)) {
                 exec(
                     $command,
                     $output,
                     $rc
                 );
-                $state[$stateConfigKey] = [
+                $state = [
                     'last_update' => time(),
                     'output' => $output,
                     'rc' => $rc
                 ];
-                $this->saveState($state);
+                $this->saveScrapeState($stateConfigKey, $state);
             } else {
-                $output = $this->loadState()[$stateConfigKey]['output'] ?? '';
-                $rc = $this->loadState()[$stateConfigKey]['rc'] ?? 0;
+                $state = $this->loadScrapeState($stateConfigKey);
+                $output = $state['output'] ?? '';
+                $rc = $state['rc'] ?? 0;
             }
 
             if ($rc && empty($pathConfig['ignore_errors'])) {
@@ -88,7 +89,7 @@ class FindCount extends AbstractCollector
             return true;
         }
 
-        $lastUpdate = $this->loadState()[$stateConfigKey]['last_update'] ?? 0;
+        $lastUpdate = $this->loadScrapeState($stateConfigKey)['last_update'] ?? 0;
 
         return  time() - $lastUpdate > $delay;
     }

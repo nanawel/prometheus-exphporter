@@ -34,29 +34,30 @@ class FindCountByDate extends AbstractCollector
             }
         }
 
-        $state = $this->loadState() ?? [];
         foreach ($pathConfigs as $pathConfig) {
             $pathConfig += ['name' => ''];
 
             $command = sprintf('find %s %s', $pathConfig['path'], $this->optsToShellArgs($pathConfig['opts'] ?? []));
             $this->log("FindCountByDate: $command", 'DEBUG');
             $stateConfigKey = md5(json_encode($pathConfig));
-            
+
+            unset($output);
             if ($this->shouldUpdate($stateConfigKey, $pathConfig)) {
                 exec(
                     $command,
                     $output,
                     $rc
                 );
-                $state[$stateConfigKey] = [
+                $state = [
                     'last_update' => time(),
                     'output' => $output,
                     'rc' => $rc
                 ];
-                $this->saveState($state);
+                $this->saveScrapeState($stateConfigKey, $state);
             } else {
-                $output = $this->loadState()[$stateConfigKey]['output'] ?? '';
-                $rc = $this->loadState()[$stateConfigKey]['rc'] ?? 0;
+                $state = $this->loadScrapeState($stateConfigKey);
+                $output = $state['output'] ?? '';
+                $rc = $state['rc'] ?? 0;
             }
 
             if ($rc && empty($pathConfig['ignore_errors'])) {
@@ -118,7 +119,7 @@ class FindCountByDate extends AbstractCollector
 
         if ($pathConfig['current_only'] ?? false) {
             $currentIntervalStart = $this->getIntervalStart(time(), $pathConfig['group_by']);
-            
+
             return [
                 $currentIntervalStart => $chunksByDate[$currentIntervalStart]
                     ?? $this->initChunk($currentIntervalStart, $pathConfig)
@@ -168,7 +169,7 @@ class FindCountByDate extends AbstractCollector
             return true;
         }
 
-        $lastUpdate = $this->loadState()[$stateConfigKey]['last_update'] ?? 0;
+        $lastUpdate = $this->loadScrapeState($stateConfigKey)['last_update'] ?? 0;
 
         return  time() - $lastUpdate > $delay;
     }
