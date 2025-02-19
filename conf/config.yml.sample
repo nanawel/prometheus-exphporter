@@ -65,6 +65,23 @@ collectors:
           # Available values for group_by: see https://www.php.net/manual/dateinterval.construct.php
           # Example below means "every 10 minutes"
           group_by: PT10M
+          interval_mode: absolute
+          use_stat: mtime
+          current_only: false
+        - name: 'Recent files in /var/log/* except journal/'
+          path: /var/log/*
+          opts:
+            '-path': '*/journal/*'
+            '-prune': null
+            '-o': null
+            '-print': null
+            '-type': 'f'
+            '-mtime': '-7'
+          update_freq: 300
+          # Available values for group_by: see https://www.php.net/manual/dateinterval.construct.php
+          # Example below means "every day"
+          group_by: P1D
+          interval_mode: relative
           use_stat: mtime
           current_only: false
 
@@ -89,7 +106,7 @@ collectors:
       speedtest_path: # Leave empty for auto-detection in PATH
       scrape_freq: 3600
       force_accept_gdpr: true
-    
+
     Arrakis\Exphporter\Collector\Usbtenkiget:
       #usbtenkiget_path: ...
       # Check "usbtenkiget -h" output for more info about units

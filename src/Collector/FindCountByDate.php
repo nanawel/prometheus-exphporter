@@ -105,11 +105,19 @@ class FindCountByDate extends AbstractCollector
         return implode(' ', $return);
     }
 
-    protected function countByDate(array $files, array $pathConfig) {
+    /**
+     * @param array $files
+     * @param array $pathConfig
+     * @return array<int, int>
+     */
+    protected function countByDate(array $files, array $pathConfig): array {
         $chunksByDate = [];
+        $intervalDateRef = ($pathConfig['interval_mode'] ?? 'relative') == 'absolute' ? 0 : time();
         foreach ($files as $file) {
             $fileTime = stat($file)[$pathConfig['use_stat'] ?? 'mtime'];
-            $intervalStart = $this->getIntervalStart($fileTime, $pathConfig['group_by']);
+            $intervalStart = $this->getIntervalStart($fileTime, $pathConfig['group_by'], $intervalDateRef);
+            var_dump($file);
+            var_dump($intervalStart);
 
             if (!isset($chunksByDate[$intervalStart])) {
                 $chunksByDate[$intervalStart] = $this->initChunk($intervalStart, $pathConfig);
@@ -118,7 +126,7 @@ class FindCountByDate extends AbstractCollector
         }
 
         if ($pathConfig['current_only'] ?? false) {
-            $currentIntervalStart = $this->getIntervalStart(time(), $pathConfig['group_by']);
+            $currentIntervalStart = $this->getIntervalStart(time(), $pathConfig['group_by'], $intervalDateRef);
 
             return [
                 $currentIntervalStart => $chunksByDate[$currentIntervalStart]
@@ -129,14 +137,25 @@ class FindCountByDate extends AbstractCollector
         return $chunksByDate;
     }
 
-    protected function getIntervalStart($date, $intervalDefinition) {
+    /**
+     * @param int $date Timestamp
+     * @param string $intervalDefinition
+     * @param int|null $intervalDateRef Timestamp
+     * @return float|int
+     */
+    protected function getIntervalStart(int $date, string $intervalDefinition, int $intervalDateRef = null) {
         $intervalSeconds = $this->dateIntervalToSeconds($intervalDefinition);
+        $zeroDateRef = floor((int) $intervalDateRef % $intervalSeconds);
+        $intervalStart = (floor((int) ($date - $zeroDateRef) / $intervalSeconds) * $intervalSeconds) + $zeroDateRef;
 
-        return floor($date / $intervalSeconds) * $intervalSeconds;
+        return $intervalStart;
     }
 
-    protected function dateIntervalToSeconds($intervalDefinition)
-    {
+    /**
+     * @param string $intervalDefinition
+     * @return int
+     */
+    protected function dateIntervalToSeconds(string $intervalDefinition): int {
         static $intervalSeconds = [];
         if (!isset($intervalSeconds[$intervalDefinition])) {
             $reference = new \DateTimeImmutable();
@@ -148,7 +167,7 @@ class FindCountByDate extends AbstractCollector
         return $intervalSeconds[$intervalDefinition];
     }
 
-    protected function initChunk($intervalStart, $pathConfig) {
+    protected function initChunk(int $intervalStart, array $pathConfig) {
         return [
             'intervalStart' => $intervalStart,
             'intervalEnd' => (new \DateTime("@$intervalStart"))
