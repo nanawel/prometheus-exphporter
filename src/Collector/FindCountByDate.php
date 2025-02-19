@@ -112,11 +112,15 @@ class FindCountByDate extends AbstractCollector
      */
     protected function countByDate(array $files, array $pathConfig): array {
         $chunksByDate = [];
-        $intervalDateRef = ($pathConfig['interval_mode'] ?? 'relative') == 'absolute' ? 0 : time();
+        $now = time();
+        $intervalDateRef = ($pathConfig['interval_mode'] ?? 'relative') == 'absolute' ? 0 : $now;
+
+        if (!$files) {
+            return [];
+        }
         foreach ($files as $file) {
             $fileTime = stat($file)[$pathConfig['use_stat'] ?? 'mtime'];
             $intervalStart = $this->getIntervalStart($fileTime, $pathConfig['group_by'], $intervalDateRef);
-
             if (!isset($chunksByDate[$intervalStart])) {
                 $chunksByDate[$intervalStart] = $this->initChunk($intervalStart, $pathConfig);
             }
@@ -124,8 +128,7 @@ class FindCountByDate extends AbstractCollector
         }
 
         if ($pathConfig['current_only'] ?? false) {
-            $currentIntervalStart = $this->getIntervalStart(time(), $pathConfig['group_by'], $intervalDateRef);
-
+            $currentIntervalStart = $this->getIntervalStart($now - 1, $pathConfig['group_by'], $intervalDateRef);
             return [
                 $currentIntervalStart => $chunksByDate[$currentIntervalStart]
                     ?? $this->initChunk($currentIntervalStart, $pathConfig)
@@ -138,17 +141,17 @@ class FindCountByDate extends AbstractCollector
     /**
      * @param int $date Timestamp
      * @param string $intervalDefinition
-     * @param int|null $intervalDateRef Timestamp
-     * @return float|int
+     * @param int $intervalDateRef Timestamp
+     * @return int
      */
-    protected function getIntervalStart(int $date, string $intervalDefinition, int $intervalDateRef = null) {
+    protected function getIntervalStart(int $date, string $intervalDefinition, int $intervalDateRef = 0): int {
         $intervalSeconds = $this->dateIntervalToSeconds($intervalDefinition);
-        $zeroDateRef = floor((int) $intervalDateRef % $intervalSeconds);
-        $intervalStart = (floor((int) ($date - $zeroDateRef) / $intervalSeconds) * $intervalSeconds)
+        $zeroDateRef = (int) floor($intervalDateRef % $intervalSeconds);
+        $intervalStart = (int) floor(($date - $zeroDateRef) / $intervalSeconds) * $intervalSeconds
             + $zeroDateRef
             - $intervalSeconds;
 
-        return $intervalStart;
+        return (int) $intervalStart;
     }
 
     /**
