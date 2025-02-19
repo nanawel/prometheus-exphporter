@@ -116,8 +116,6 @@ class FindCountByDate extends AbstractCollector
         foreach ($files as $file) {
             $fileTime = stat($file)[$pathConfig['use_stat'] ?? 'mtime'];
             $intervalStart = $this->getIntervalStart($fileTime, $pathConfig['group_by'], $intervalDateRef);
-            var_dump($file);
-            var_dump($intervalStart);
 
             if (!isset($chunksByDate[$intervalStart])) {
                 $chunksByDate[$intervalStart] = $this->initChunk($intervalStart, $pathConfig);
