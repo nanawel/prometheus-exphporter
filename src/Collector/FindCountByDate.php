@@ -144,7 +144,9 @@ class FindCountByDate extends AbstractCollector
     protected function getIntervalStart(int $date, string $intervalDefinition, int $intervalDateRef = null) {
         $intervalSeconds = $this->dateIntervalToSeconds($intervalDefinition);
         $zeroDateRef = floor((int) $intervalDateRef % $intervalSeconds);
-        $intervalStart = (floor((int) ($date - $zeroDateRef) / $intervalSeconds) * $intervalSeconds) + $zeroDateRef;
+        $intervalStart = (floor((int) ($date - $zeroDateRef) / $intervalSeconds) * $intervalSeconds)
+            + $zeroDateRef
+            - $intervalSeconds;
 
         return $intervalStart;
     }
