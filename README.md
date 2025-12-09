@@ -3,10 +3,10 @@ Prometheus Exphporter
 
 ## Installation
 
-1. Clone project:
+1. Clone the project:
+
 ```shell
-git clone https://nanawel-gitlab.dyndns.org/anael/prometheus-exphporter.git
-# or git clone git@nanawel-gitlab.dyndns.org:anael/prometheus-exphporter.git
+git clone https://github.com/nanawel/prometheus-exphporter.git
 cd prometheus-exphporter
 ```
 
