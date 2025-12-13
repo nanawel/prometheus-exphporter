@@ -24,7 +24,7 @@ class FindCountByDate extends AbstractCollector
                 $this->log('FindCountByDate: Missing path. Ignoring.', 'ERROR');
                 continue;
             }
-            $foundPaths = glob($pathConfig['path'], GLOB_ONLYDIR);
+            $foundPaths = glob($pathConfig['path'], GLOB_ONLYDIR | GLOB_BRACE);
             if (empty($foundPaths)) {
                 $this->log('FindCountByDate: Invalid or non-existent path. Ignoring.', 'ERROR');
                 continue;
